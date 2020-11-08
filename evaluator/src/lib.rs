@@ -33,10 +33,17 @@ pub fn get_hand_category(rank: u16) -> HandCategory {
     }
 }
 
+#[inline]
+pub fn add_card(hand: u64, mask: u64, card: usize) -> (u64, u64) {
+    let (h, m) = unsafe { *CARDS.get_unchecked(card) };
+    (hand.wrapping_add(h), mask | m)
+}
+
 /// Returns hand strength in 16-bit integer.
 /// - `hand`: unique value that represents 7-card combination
 /// - `mask`: bit mask with exactly 7 bits set to 1 (suits are in 16-bit groups)
-pub fn evaluate_hand(hand: u32, mask: u64) -> u16 {
+#[inline]
+pub fn evaluate_hand(hand: u64, mask: u64) -> u16 {
     let suit_key = (hand >> KEY_BITS) as usize;
     let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
     if is_flush >= 0 {
@@ -74,13 +81,11 @@ mod tests {
             c6.parse::<Card>().unwrap().id(),
             c7.parse::<Card>().unwrap().id(),
         ];
-        let mut hand = 0;
-        let mut mask = 0;
+        let mut pair = (0, 0);
         for c in &cards {
-            hand += CARDS[*c];
-            mask |= CARDS_BIT[*c];
+            pair = add_card(pair.0, pair.1, *c);
         }
-        evaluate_hand(hand, mask)
+        evaluate_hand(pair.0, pair.1)
     }
 
     #[test]
@@ -101,26 +106,19 @@ mod tests {
         let mut counter = HashMap::new();
 
         for i in 0..(NUMBER_OF_CARDS - 6) {
-            let hand = CARDS[i];
-            let mask = CARDS_BIT[i];
+            let (hand, mask) = add_card(0, 0, i);
             for j in (i + 1)..(NUMBER_OF_CARDS - 5) {
-                let hand = hand + CARDS[j];
-                let mask = mask | CARDS_BIT[j];
+                let (hand, mask) = add_card(hand, mask, j);
                 for k in (j + 1)..(NUMBER_OF_CARDS - 4) {
-                    let hand = hand + CARDS[k];
-                    let mask = mask | CARDS_BIT[k];
+                    let (hand, mask) = add_card(hand, mask, k);
                     for m in (k + 1)..(NUMBER_OF_CARDS - 3) {
-                        let hand = hand + CARDS[m];
-                        let mask = mask | CARDS_BIT[m];
+                        let (hand, mask) = add_card(hand, mask, m);
                         for n in (m + 1)..(NUMBER_OF_CARDS - 2) {
-                            let hand = hand + CARDS[n];
-                            let mask = mask | CARDS_BIT[n];
+                            let (hand, mask) = add_card(hand, mask, n);
                             for p in (n + 1)..(NUMBER_OF_CARDS - 1) {
-                                let hand = hand + CARDS[p];
-                                let mask = mask | CARDS_BIT[p];
+                                let (hand, mask) = add_card(hand, mask, p);
                                 for q in (p + 1)..NUMBER_OF_CARDS {
-                                    let hand = hand + CARDS[q];
-                                    let mask = mask | CARDS_BIT[q];
+                                    let (hand, mask) = add_card(hand, mask, q);
                                     let rank = evaluate_hand(hand, mask);
                                     let category = get_hand_category(rank);
                                     rankset.insert(rank);

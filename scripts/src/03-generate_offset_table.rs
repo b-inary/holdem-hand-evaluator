@@ -12,7 +12,7 @@ use std::io::{stdout, Write};
 
 #[derive(Clone, Debug)]
 struct Row {
-    cols: Vec<u32>,
+    cols: Vec<u64>,
     idx: usize,
 }
 
@@ -121,7 +121,7 @@ fn main() {
     }
 
     let mut file = File::create("assets/src/offsets.rs").unwrap();
-    writeln!(file, "pub const MIX_MULTIPLIER: u32 = {};", best_mult).unwrap();
+    writeln!(file, "pub const MIX_MULTIPLIER: u64 = {};", best_mult).unwrap();
     writeln!(
         file,
         "pub const OFFSETS: [i32; {}] = {:?};",

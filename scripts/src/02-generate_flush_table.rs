@@ -4,7 +4,7 @@ use assets::constants::*;
 use std::fs::File;
 use std::io::Write;
 
-const SUITS: [u32; 4] = [CLUB, DIAMOND, HEART, SPADE];
+const SUITS: [u64; 4] = [CLUB, DIAMOND, HEART, SPADE];
 
 fn main() {
     let mut result: Vec<i8> = vec![-2; 7 * SUITS[3] as usize + 1];
