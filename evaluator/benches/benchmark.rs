@@ -24,7 +24,8 @@ fn bench() -> u16 {
                             for q in (p + 1)..NUMBER_OF_CARDS {
                                 let hand = hand + CARDS[q];
                                 let mask = mask | CARDS_BIT[q];
-                                sum = sum.wrapping_add(evaluator::evaluate_hand(hand, mask));
+                                let rank = evaluator::evaluate_hand(hand, mask);
+                                sum = sum.wrapping_add(rank);
                             }
                         }
                     }

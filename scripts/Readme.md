@@ -23,7 +23,7 @@ pub fn evaluate_hand(hand: u32, mask: u64) -> u16 {
         LOOKUP_FLUSH[flush_key]
     } else {
         // mix bits by multiplying some odd number
-        let mixed_key = ((hand * MIX_MULTIPLIER) & KEY_MASK);
+        let mixed_key = (hand * MIX_MULTIPLIER) & KEY_MASK;
 
         // compute hash by a single displacement method
         let hash_key = mixed_key + OFFSETS[mixed_key >> OFFSET_SHIFT];

@@ -38,14 +38,15 @@ pub fn get_hand_category(rank: u16) -> HandCategory {
 /// - `mask`: bit mask with exactly 7 bits set to 1 (suits are in 16-bit groups)
 pub fn evaluate_hand(hand: u32, mask: u64) -> u16 {
     let suit_key = (hand >> KEY_BITS) as usize;
-    let is_flush = FLUSH_TABLE[suit_key];
+    let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
     if is_flush >= 0 {
         let flush_key = (mask >> (16 * is_flush as usize)) & ((1 << NUMBER_OF_RANKS) - 1);
-        LOOKUP_FLUSH[flush_key as usize]
+        unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
     } else {
         let mixed_key = (hand.wrapping_mul(MIX_MULTIPLIER) & KEY_MASK) as usize;
-        let hash_key = mixed_key.wrapping_add(OFFSETS[mixed_key >> OFFSET_SHIFT] as usize);
-        LOOKUP[hash_key]
+        let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) } as usize;
+        let hash_key = mixed_key.wrapping_add(offset);
+        unsafe { *LOOKUP.get_unchecked(hash_key) }
     }
 }
 
