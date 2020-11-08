@@ -1,0 +1,26 @@
+[package]
+name = "scripts"
+version = "0.1.0"
+authors = ["Wataru Inariba <oinari17@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+assets = { path = "../assets" }
+
+[[bin]]
+name = "01-generate_bases"
+path = "src/01-generate_bases.rs"
+
+[[bin]]
+name = "02-generate_flush_table"
+path = "src/02-generate_flush_table.rs"
+
+[[bin]]
+name = "03-generate_offset_table"
+path = "src/03-generate_offset_table.rs"
+
+[[bin]]
+name = "04-generate_lookup"
+path = "src/04-generate_lookup.rs"
