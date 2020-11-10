@@ -17,7 +17,10 @@ struct Row {
 }
 
 fn main() {
-    println!("size of offset table: {}", 1 << (KEY_BITS - OFFSET_SHIFT));
+    println!(
+        "size of offset table: {}",
+        1 << (RANK_KEY_BITS - OFFSET_SHIFT)
+    );
 
     let mut keys = Vec::new();
     for i in 0..(NUMBER_OF_RANKS - 1) {
@@ -27,9 +30,9 @@ fn main() {
                     for n in cmp::max(m, i + 1)..NUMBER_OF_RANKS {
                         for p in cmp::max(n, j + 1)..NUMBER_OF_RANKS {
                             for q in cmp::max(p, k + 1)..NUMBER_OF_RANKS {
-                                let a = BASES[i] + BASES[j] + BASES[k] + BASES[m];
-                                let b = BASES[n] + BASES[p] + BASES[q];
-                                keys.push(a + b);
+                                let a = RANK_BASES[i] + RANK_BASES[j] + RANK_BASES[k];
+                                let b = RANK_BASES[m] + RANK_BASES[n] + RANK_BASES[p];
+                                keys.push(a + b + RANK_BASES[q]);
                             }
                         }
                     }
@@ -48,7 +51,7 @@ fn main() {
                 cols: Vec::new(),
                 idx: 0
             };
-            1 << (KEY_BITS - OFFSET_SHIFT)
+            1 << (RANK_KEY_BITS - OFFSET_SHIFT)
         ];
 
         for (i, row) in rows.iter_mut().enumerate() {
@@ -56,7 +59,7 @@ fn main() {
         }
 
         for key in &keys {
-            let x = key.wrapping_mul(mult) & KEY_MASK;
+            let x = key.wrapping_mul(mult) & RANK_KEY_MASK;
             let row = x >> OFFSET_SHIFT;
             let col = x & (1 << OFFSET_SHIFT) - 1;
             rows[row as usize].cols.push(col);
@@ -71,7 +74,7 @@ fn main() {
         rows.reverse();
 
         let mut least_empty = 0;
-        let mut filled = vec![false; 1 << KEY_BITS];
+        let mut filled = vec![false; 1 << RANK_KEY_BITS];
         let mut offsets = vec![0; rows.len()];
 
         for Row { cols, idx } in &rows {

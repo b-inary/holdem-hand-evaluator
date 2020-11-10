@@ -3,13 +3,15 @@
 The final goal is to somehow prepare to be able to evaluate the hand in the following code:
 
 ```rust
-/// Returns hand strength in 16-bit integer.
-/// - `hand`: some unique value that represents 7-card combination
+/// - `key`: some unique value that represents 7-card combination
 /// - `mask`: bit mask with exactly 7 bits set to 1 (suits are in 16-bit groups)
+pub struct Hand { key: u32, mask: u64 }
+
+/// Returns hand strength in 16-bit integer.
 /// (this is a pseudo-code; won't compile because casts are omitted)
-pub fn evaluate_hand(hand: u32, mask: u64) -> u16 {
+pub fn evaluate_hand(hand: Hand) -> u16 {
     // extract suit information
-    let suit_key = hand >> KEY_BITS;
+    let suit_key = hand.key >> RANK_KEY_BITS;
 
     // check whether the hand is flush or not
     let is_flush = FLUSH_TABLE[suit_key];
@@ -17,13 +19,13 @@ pub fn evaluate_hand(hand: u32, mask: u64) -> u16 {
     if is_flush >= 0 {
         // when flush, use 13-bit mask as a key:
         // the key is at most 0b1111111000000 = 8128
-        let flush_key = (mask >> (16 * is_flush)) & ((1 << NUMBER_OF_RANKS) - 1);
+        let flush_key = (hand.mask >> (16 * is_flush)) & ((1 << NUMBER_OF_RANKS) - 1);
 
         // refer lookup table for flush
         LOOKUP_FLUSH[flush_key]
     } else {
         // mix bits by multiplying some odd number
-        let mixed_key = (hand * MIX_MULTIPLIER) & KEY_MASK;
+        let mixed_key = (hand.key * MIX_MULTIPLIER) & RANK_KEY_MASK;
 
         // compute hash by a single displacement method
         let hash_key = mixed_key + OFFSETS[mixed_key >> OFFSET_SHIFT];

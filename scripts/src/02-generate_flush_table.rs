@@ -4,10 +4,8 @@ use assets::constants::*;
 use std::fs::File;
 use std::io::Write;
 
-const SUITS: [u64; 4] = [CLUB, DIAMOND, HEART, SPADE];
-
 fn main() {
-    let mut result: Vec<i8> = vec![-2; 7 * SUITS[3] as usize + 1];
+    let mut result: Vec<i8> = vec![-2; 7 * SUIT_BASES[3] as usize + 1];
     for i in 0..4 {
         for j in 0..4 {
             for k in 0..4 {
@@ -15,9 +13,9 @@ fn main() {
                     for n in 0..4 {
                         for p in 0..4 {
                             for q in 0..4 {
-                                let a = SUITS[i] + SUITS[j] + SUITS[k] + SUITS[m];
-                                let b = SUITS[n] + SUITS[p] + SUITS[q];
-                                let x = a + b;
+                                let a = SUIT_BASES[i] + SUIT_BASES[j] + SUIT_BASES[k];
+                                let b = SUIT_BASES[m] + SUIT_BASES[n] + SUIT_BASES[p];
+                                let x = a + b + SUIT_BASES[q];
                                 if result[x as usize] != -2 {
                                     continue;
                                 }

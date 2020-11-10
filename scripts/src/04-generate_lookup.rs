@@ -49,7 +49,7 @@ fn main() {
                             let (hand, mask) = add_card(hand, mask, p);
                             for q in (p + 1)..NUMBER_OF_CARDS {
                                 let (hand, mask) = add_card(hand, mask, q);
-                                let suit_key = (hand >> KEY_BITS) as usize;
+                                let suit_key = (hand >> RANK_KEY_BITS) as usize;
                                 let is_flush = FLUSH_TABLE[suit_key];
                                 if is_flush >= 0 {
                                     let flush_key = mask >> (16 * is_flush as usize);
@@ -61,7 +61,7 @@ fn main() {
                                         );
                                     }
                                 } else {
-                                    let t = ((hand * MIX_MULTIPLIER) & KEY_MASK) as usize;
+                                    let t = ((hand * MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
                                     let hash_key = t + OFFSETS[t >> OFFSET_SHIFT] as usize;
                                     if !lookup.contains_key(&hash_key) {
                                         lookup.insert(
