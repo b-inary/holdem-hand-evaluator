@@ -65,8 +65,6 @@ impl Hand {
 }
 
 /// Returns hand strength in 16-bit integer.
-/// - `hand`: unique value that represents 7-card combination
-/// - `mask`: bit mask with exactly 7 bits set to 1 (suits are in 16-bit groups)
 #[inline]
 pub fn evaluate_hand(hand: Hand) -> u16 {
     let suit_key = (hand.key >> RANK_KEY_BITS) as usize;
@@ -88,27 +86,12 @@ mod tests {
     use card::*;
     use std::collections::{HashMap, HashSet};
 
-    fn evaluate_hand_str(
-        c1: &str,
-        c2: &str,
-        c3: &str,
-        c4: &str,
-        c5: &str,
-        c6: &str,
-        c7: &str,
-    ) -> u16 {
-        let cards = [
-            c1.parse::<Card>().unwrap().id(),
-            c2.parse::<Card>().unwrap().id(),
-            c3.parse::<Card>().unwrap().id(),
-            c4.parse::<Card>().unwrap().id(),
-            c5.parse::<Card>().unwrap().id(),
-            c6.parse::<Card>().unwrap().id(),
-            c7.parse::<Card>().unwrap().id(),
-        ];
+    fn evaluate_hand_str(hand_str: &str) -> u16 {
+        let cards = parse_hand(hand_str).unwrap();
+        assert_eq!(cards.len(), 7);
         let mut hand = Hand::new();
         for c in &cards {
-            hand = hand.add_card(*c);
+            hand = hand.add_card(c.id());
         }
         evaluate_hand(hand)
     }
@@ -172,101 +155,41 @@ mod tests {
     #[test]
     fn test_edge_cases() {
         // straight flushes
-        assert_eq!(
-            evaluate_hand_str("As", "Ks", "Qs", "Js", "Ts", "7d", "5s"),
-            (8 << 12) + 9
-        );
-        assert_eq!(
-            evaluate_hand_str("Ac", "7c", "6c", "5c", "4c", "3c", "2c"),
-            (8 << 12) + 2
-        );
-        assert_eq!(
-            evaluate_hand_str("Ad", "Qs", "Jc", "5d", "4d", "3d", "2d"),
-            (8 << 12) + 0
-        );
+        assert_eq!(evaluate_hand_str("AsKsQsJsTs7d5s"), (8 << 12) + 9);
+        assert_eq!(evaluate_hand_str("Ac7c6c5c4c3c2c"), (8 << 12) + 2);
+        assert_eq!(evaluate_hand_str("AdQsJc5d4d3d2d"), (8 << 12) + 0);
 
         // four of a kinds
-        assert_eq!(
-            evaluate_hand_str("As", "Ac", "Ah", "Ad", "Ks", "Qc", "Th"),
-            (7 << 12) + 155
-        );
-        assert_eq!(
-            evaluate_hand_str("3d", "3h", "3s", "2c", "2d", "2h", "2s"),
-            (7 << 12) + 0
-        );
+        assert_eq!(evaluate_hand_str("AsAcAhAdKsQcTh"), (7 << 12) + 155);
+        assert_eq!(evaluate_hand_str("3d3h3s2c2d2h2s"), (7 << 12) + 0);
 
         // full houses
-        assert_eq!(
-            evaluate_hand_str("As", "Ad", "Ah", "Kc", "Kd", "Kh", "2d"),
-            (6 << 12) + 155
-        );
-        assert_eq!(
-            evaluate_hand_str("4h", "4c", "3s", "3c", "2d", "2c", "2h"),
-            (6 << 12) + 1
-        );
-        assert_eq!(
-            evaluate_hand_str("5h", "4c", "3s", "3c", "2d", "2c", "2h"),
-            (6 << 12) + 0
-        );
+        assert_eq!(evaluate_hand_str("AsAdAhKcKdKh2d"), (6 << 12) + 155);
+        assert_eq!(evaluate_hand_str("4h4c3s3c2d2c2h"), (6 << 12) + 1);
+        assert_eq!(evaluate_hand_str("5h4c3s3c2d2c2h"), (6 << 12) + 0);
 
         // flushes
-        assert_eq!(
-            evaluate_hand_str("Ah", "Kh", "Qh", "Jh", "9h", "9c", "9s"),
-            (5 << 12) + 1276
-        );
-        assert_eq!(
-            evaluate_hand_str("Js", "7c", "6d", "5c", "4c", "3c", "2c"),
-            (5 << 12) + 0
-        );
+        assert_eq!(evaluate_hand_str("AhKhQhJh9h9c9s"), (5 << 12) + 1276);
+        assert_eq!(evaluate_hand_str("Js7c6d5c4c3c2c"), (5 << 12) + 0);
 
         // straights
-        assert_eq!(
-            evaluate_hand_str("Ah", "Kc", "Kd", "Kh", "Qc", "Jd", "Ts"),
-            (4 << 12) + 9
-        );
-        assert_eq!(
-            evaluate_hand_str("Ac", "8c", "7c", "5d", "4d", "3d", "2d"),
-            (4 << 12) + 0
-        );
+        assert_eq!(evaluate_hand_str("AhKcKdKhQcJdTs"), (4 << 12) + 9);
+        assert_eq!(evaluate_hand_str("Ac8c7c5d4d3d2d"), (4 << 12) + 0);
 
         // three of a kinds
-        assert_eq!(
-            evaluate_hand_str("As", "Ac", "Ah", "Kh", "Qd", "5c", "3s"),
-            (3 << 12) + 857
-        );
-        assert_eq!(
-            evaluate_hand_str("7d", "5c", "4c", "3c", "2d", "2s", "2h"),
-            (3 << 12) + 8
-        );
+        assert_eq!(evaluate_hand_str("AsAcAhKhQd5c3s"), (3 << 12) + 857);
+        assert_eq!(evaluate_hand_str("7d5c4c3c2d2s2h"), (3 << 12) + 8);
 
         // two pairs
-        assert_eq!(
-            evaluate_hand_str("As", "Ah", "Ks", "Kh", "Qs", "Qh", "Js"),
-            (2 << 12) + 857
-        );
-        assert_eq!(
-            evaluate_hand_str("7c", "6d", "5h", "3s", "3c", "2d", "2h"),
-            (2 << 12) + 3
-        );
+        assert_eq!(evaluate_hand_str("AsAhKsKhQsQhJs"), (2 << 12) + 857);
+        assert_eq!(evaluate_hand_str("7c6d5h3s3c2d2h"), (2 << 12) + 3);
 
         // one pairs
-        assert_eq!(
-            evaluate_hand_str("Ad", "As", "Kh", "Qd", "Js", "3s", "2c"),
-            (1 << 12) + 2859
-        );
-        assert_eq!(
-            evaluate_hand_str("8s", "7s", "5h", "4c", "3c", "2d", "2c"),
-            (1 << 12) + 18
-        );
+        assert_eq!(evaluate_hand_str("AdAsKhQdJs3s2c"), (1 << 12) + 2859);
+        assert_eq!(evaluate_hand_str("8s7s5h4c3c2d2c"), (1 << 12) + 18);
 
         // high cards
-        assert_eq!(
-            evaluate_hand_str("Ad", "Kd", "Qd", "Jd", "9s", "3h", "2c"),
-            1276
-        );
-        assert_eq!(
-            evaluate_hand_str("9h", "8s", "7d", "5d", "4d", "3c", "2d"),
-            48
-        );
+        assert_eq!(evaluate_hand_str("AdKdQdJd9s3h2c"), (0 << 12) + 1276);
+        assert_eq!(evaluate_hand_str("9h8s7d5d4d3c2d"), (0 << 12) + 48);
     }
 }

@@ -152,6 +152,19 @@ impl FromStr for Card {
     }
 }
 
+pub fn parse_hand(s: &str) -> Result<Vec<Card>, ()> {
+    let len = s.len();
+    let mut cards = Vec::new();
+    if len % 2 == 1 {
+        return Err(());
+    }
+    for i in (0..len).step_by(2) {
+        let card = s.get(i..(i + 2)).ok_or(())?;
+        cards.push(card.parse::<Card>()?)
+    }
+    Ok(cards)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -176,5 +189,25 @@ mod tests {
         assert_eq!("1s".parse::<Card>(), Err(()));
         assert_eq!("".parse::<Card>(), Err(()));
         assert_eq!("4cG".parse::<Card>(), Err(()));
+
+        assert_eq!(parse_hand(""), Ok(Vec::new()));
+        assert_eq!(
+            parse_hand("2d3cKs"),
+            Ok(vec![
+                Card {
+                    rank: Rank::Deuce,
+                    suit: Suit::Diamond,
+                },
+                Card {
+                    rank: Rank::Trey,
+                    suit: Suit::Club,
+                },
+                Card {
+                    rank: Rank::King,
+                    suit: Suit::Spade,
+                },
+            ])
+        );
+        assert_eq!(parse_hand("2d3cKsA"), Err(()));
     }
 }
