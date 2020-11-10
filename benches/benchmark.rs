@@ -1,6 +1,6 @@
 use assets::constants::*;
 use criterion::{criterion_group, criterion_main, Criterion};
-use evaluator::{evaluate_hand, Hand};
+use holdem_hand_evaluator::{evaluate_hand, Hand};
 
 fn bench() -> u16 {
     let mut sum: u16 = 0;

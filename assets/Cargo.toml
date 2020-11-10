@@ -1,5 +1,5 @@
 [package]
-name = "assets"
+name = "holdem-hand-evaluator-assets"
 version = "0.1.0"
 authors = ["Wataru Inariba <oinari17@gmail.com>"]
 edition = "2018"

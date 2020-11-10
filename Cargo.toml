@@ -1,2 +1,20 @@
+[package]
+name = "holdem-hand-evaluator"
+version = "0.1.0"
+authors = ["Wataru Inariba <oinari17@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [workspace]
-members = ["assets", "evaluator", "scripts"]
+members = ["assets", "scripts"]
+
+[dependencies]
+assets = { path = "assets", package = "holdem-hand-evaluator-assets" }
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "benchmark"
+harness = false

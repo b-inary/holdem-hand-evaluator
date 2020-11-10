@@ -44,7 +44,7 @@ We want to represent `hand` value as a simple sum of the card values: for exampl
 
 The most obvious representation is to assign ranks to the power of 5 and suits to the power of 8, and this scheme requires 31-bit space for ranks and 12-bit space for suits.
 
-`01-generate_bases.rs` finds more efficient bases for ranks by the greedy method. It gives us bases of [0, 1, 5, 22, 98, 453, 2031, 8698, 22854, 83661, 262349, 636345, 1479181] and this set requires only 23-bit space. There might be a more efficient set of bases, but here we will use this.
+`01-rank_bases.rs` finds more efficient bases for ranks by the greedy method. It gives us bases of [0, 1, 5, 22, 98, 453, 2031, 8698, 22854, 83661, 262349, 636345, 1479181] and this set requires only 23-bit space. There might be a more efficient set of bases, but here we will use this.
 
 The optimal bases for suits is [0, 1, 29, 37]. It requires a 9-bit space, and thus we can store the information just in 32-bit space.
 
@@ -52,7 +52,7 @@ The optimal bases for suits is [0, 1, 29, 37]. It requires a 9-bit space, and th
 
 Once we obtain the sum of suit values, it is easy to check whether the hand is flush or not. When the hand is flush, there are no possibilities that the hand is also four-of-a-kind or full house; so we can completely divide the process into flush and non-flush.
 
-`02-generate_flush_table.rs` precomputes a lookup table for judging flush.
+`02-flush_table.rs` precomputes a lookup table for judging flush.
 
 ## Perfect Hashing for Non-flush
 
@@ -60,12 +60,12 @@ When the hand is not flush, the hand strength can be computed only by the sum of
 
 This is where the complete hash function comes in. The complete hash function is a hash function that is injective, so collisions do not occur by principle.
 
-Here we use a simple hash function called the single displacement method. `03-generate_offset_table.rs` attempts to generate an offset table used in the hash function in which the maximum hash key is minimized.
+Here we use a simple hash function called the single displacement method. `03-offset_table.rs` attempts to generate an offset table used in the hash function in which the maximum hash key is minimized.
 
-To achieve a better compression ratio, we also *mix the bits* before applying the hash function by multiplying an odd number. A decent multiplier is also given by `03-generate_offset_table.rs`.
+To achieve a better compression ratio, we also *mix the bits* before applying the hash function by multiplying an odd number. A decent multiplier is also given by `03-offset_table.rs`.
 
 ## Now, Refer the Lookup Table!
 
-`04-generate_lookup.rs` computes lookup tables both for flushes and non-flushes. The lookup table for flushes has 8,129 entries (= 16kB) and that for non-flushes has 49,205 entries (= 96kB).
+`04-lookup_tables.rs` computes lookup tables both for flushes and non-flushes. The lookup table for flushes has 8,129 entries (= 16kB) and that for non-flushes has 49,205 entries (= 96kB).
 
 Although there are 52 choose 5 (= 2,598,960) unique five-card poker hands, many of those have the same strength; actually, it is known that there are only 7,462 *equivalence classes* on five-card poker. Therefore, the return value fits in a 16-bit integer.

@@ -84,7 +84,7 @@ fn main() {
             let mut offset = least_empty as i32 - cols[0] as i32;
             'search: for i in offset.. {
                 for col in cols {
-                    if filled[i as usize + *col as usize] {
+                    if filled[col.wrapping_add(i as u64) as usize] {
                         continue 'search;
                     }
                 }
@@ -93,7 +93,7 @@ fn main() {
             }
             offsets[*idx] = offset;
             for col in cols {
-                filled[offset as usize + *col as usize] = true;
+                filled[col.wrapping_add(offset as u64) as usize] = true;
             }
             while filled[least_empty] {
                 least_empty += 1;

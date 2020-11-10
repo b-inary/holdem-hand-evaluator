@@ -26,9 +26,9 @@ fn adjust_hand_rank(rank: u16) -> u16 {
 }
 
 #[inline]
-pub fn add_card(hand: u64, mask: u64, card: usize) -> (u64, u64) {
-    let (h, m) = unsafe { *CARDS.get_unchecked(card) };
-    (hand.wrapping_add(h), mask | m)
+pub fn add_card(key: u64, mask: u64, card: usize) -> (u64, u64) {
+    let (k, m) = unsafe { *CARDS.get_unchecked(card) };
+    (key.wrapping_add(k), mask.wrapping_add(m))
 }
 
 fn main() {
@@ -36,20 +36,20 @@ fn main() {
     let mut lookup_flush = HashMap::new();
 
     for i in 0..(NUMBER_OF_CARDS - 6) {
-        let (hand, mask) = add_card(0, 0, i);
+        let (key, mask) = add_card(0, 0, i);
         for j in (i + 1)..(NUMBER_OF_CARDS - 5) {
-            let (hand, mask) = add_card(hand, mask, j);
+            let (key, mask) = add_card(key, mask, j);
             for k in (j + 1)..(NUMBER_OF_CARDS - 4) {
-                let (hand, mask) = add_card(hand, mask, k);
+                let (key, mask) = add_card(key, mask, k);
                 for m in (k + 1)..(NUMBER_OF_CARDS - 3) {
-                    let (hand, mask) = add_card(hand, mask, m);
+                    let (key, mask) = add_card(key, mask, m);
                     for n in (m + 1)..(NUMBER_OF_CARDS - 2) {
-                        let (hand, mask) = add_card(hand, mask, n);
+                        let (key, mask) = add_card(key, mask, n);
                         for p in (n + 1)..(NUMBER_OF_CARDS - 1) {
-                            let (hand, mask) = add_card(hand, mask, p);
+                            let (key, mask) = add_card(key, mask, p);
                             for q in (p + 1)..NUMBER_OF_CARDS {
-                                let (hand, mask) = add_card(hand, mask, q);
-                                let suit_key = (hand >> RANK_KEY_BITS) as usize;
+                                let (key, mask) = add_card(key, mask, q);
+                                let suit_key = (key >> RANK_KEY_BITS) as usize;
                                 let is_flush = FLUSH_TABLE[suit_key];
                                 if is_flush >= 0 {
                                     let flush_key = mask >> (16 * is_flush as usize);
@@ -61,8 +61,10 @@ fn main() {
                                         );
                                     }
                                 } else {
-                                    let t = ((hand * MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
-                                    let hash_key = t + OFFSETS[t >> OFFSET_SHIFT] as usize;
+                                    let mixed_key =
+                                        (key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
+                                    let offset = OFFSETS[mixed_key >> OFFSET_SHIFT] as usize;
+                                    let hash_key = mixed_key.wrapping_add(offset);
                                     if !lookup.contains_key(&hash_key) {
                                         lookup.insert(
                                             hash_key,
