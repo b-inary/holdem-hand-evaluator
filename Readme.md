@@ -1,6 +1,6 @@
 # holdem-hand-evaluator
 
-Super fast hand rank evaluator for Texas hold'em written in Rust (~800M eval/s sequential @Ryzen 7 3700X single-threaded)
+Super fast hand rank evaluator for Texas hold'em for Rust (~800M eval/s sequential @Ryzen 7 3700X single-threaded)
 
 ## Usage
 
@@ -19,6 +19,8 @@ fn main() {
     // card ID: 0-3 => 2c2d2h2s, 4-7 => 3c3d3h3s, ..., 48-51 => AcAdAhAs
 
     // construct hand one by one
+    // argument of add_card() must be in range [0, 51] and must not be duplicated
+    // (there are no error checks)
     let mut hand1 = Hand::new();
     hand1 = hand1.add_card(2); // 2h
     hand1 = hand1.add_card(3); // 2s
@@ -27,22 +29,28 @@ fn main() {
     hand1 = hand1.add_card(11); // 4s
     hand1 = hand1.add_card(13); // 5d
     hand1 = hand1.add_card(17); // 6d
-    assert_eq!(hand1.len(), 7);
-    let rank1 = hand1.evaluate(); // stronger hand yields higher value
-    println!("rank1: {}", rank1); // 16385
-    println!("category1: {:?}", get_hand_category(rank1)); // Straight
 
-    // construct hand from Vec
+    // construct hand from Vec (also there are no error checks)
     let hand2 = Hand::from_vec(&vec![19, 23, 29, 31, 37, 41, 43]); // 6s7s9d9sJdQdQs
-    assert_eq!(hand2.len(), 7);
-    let rank2 = hand2.evaluate();
-    println!("rank2: {}", rank2); // 8772
-    println!("category2: {:?}", get_hand_category(rank2)); // TwoPair
 
     // construct hand from String
     let hand3 = "AhKhQhJhTh8c6d".parse::<Hand>().unwrap();
+
+    // evaluate() function computes the hand rank (stronger hand yields higher value)
+    // only supports 7-card hand (again there are no error checks)
+    assert_eq!(hand1.len(), 7);
+    let rank1 = hand1.evaluate();
+    assert_eq!(hand2.len(), 7);
+    let rank2 = hand2.evaluate();
     assert_eq!(hand3.len(), 7);
     let rank3 = hand3.evaluate();
+
+    println!("rank1: {}", rank1); // 16385
+    println!("category1: {:?}", get_hand_category(rank1)); // Straight
+
+    println!("rank2: {}", rank2); // 8772
+    println!("category2: {:?}", get_hand_category(rank2)); // TwoPair
+
     println!("rank3: {}", rank3); // 32777
     println!("category3: {:?}", get_hand_category(rank3)); // StraightFlush
 }
