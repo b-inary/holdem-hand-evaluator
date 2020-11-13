@@ -1,6 +1,6 @@
 use assets::constants::*;
 use criterion::{criterion_group, criterion_main, Criterion};
-use holdem_hand_evaluator::{evaluate_hand, Hand};
+use holdem_hand_evaluator::Hand;
 
 fn bench() -> u16 {
     let mut sum: u16 = 0;
@@ -18,7 +18,7 @@ fn bench() -> u16 {
                             let hand = hand.add_card(p);
                             for q in (p + 1)..NUMBER_OF_CARDS {
                                 let hand = hand.add_card(q);
-                                let rank = evaluate_hand(hand);
+                                let rank = hand.evaluate();
                                 sum = sum.wrapping_add(rank);
                             }
                         }

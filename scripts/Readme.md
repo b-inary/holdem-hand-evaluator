@@ -7,40 +7,42 @@ The final goal is to somehow prepare to be able to evaluate the hand in the foll
 /// - `mask`: bit mask with exactly 7 bits set to 1 (suits are in 16-bit groups)
 pub struct Hand { key: u32, mask: u64 }
 
-/// Returns hand strength in 16-bit integer.
-/// (this is a pseudo-code; won't compile because casts are omitted)
-pub fn evaluate_hand(hand: Hand) -> u16 {
-    // extract suit information
-    let suit_key = hand.key >> RANK_KEY_BITS;
+impl Hand {
+    /// Returns hand strength in 16-bit integer.
+    /// (this is a pseudo-code; won't compile because casts are omitted)
+    pub fn evaluate(&self) -> u16 {
+        // extract suit information
+        let suit_key = self.key >> RANK_KEY_BITS;
 
-    // check whether the hand is flush or not
-    let is_flush = FLUSH_TABLE[suit_key];
+        // check whether the hand is flush or not
+        let is_flush = FLUSH_TABLE[suit_key];
 
-    if is_flush >= 0 {
-        // when flush, use 13-bit mask as a key:
-        // the key is at most 0b1111111000000 = 8128
-        let flush_key = (hand.mask >> (16 * is_flush)) & ((1 << NUMBER_OF_RANKS) - 1);
+        if is_flush >= 0 {
+            // when flush, use 13-bit mask as a key:
+            // the key is at most 0b1111111000000 = 8128
+            let flush_key = (self.mask >> (16 * is_flush)) & ((1 << NUMBER_OF_RANKS) - 1);
 
-        // refer lookup table for flush
-        LOOKUP_FLUSH[flush_key]
-    } else {
-        // mix bits by multiplying some odd number
-        let mixed_key = (hand.key * MIX_MULTIPLIER) & RANK_KEY_MASK;
+            // refer lookup table for flush
+            LOOKUP_FLUSH[flush_key]
+        } else {
+            // mix bits by multiplying some odd number
+            let mixed_key = (self.key * MIX_MULTIPLIER) & RANK_KEY_MASK;
 
-        // compute hash by a single displacement method
-        let hash_key = mixed_key + OFFSETS[mixed_key >> OFFSET_SHIFT];
+            // compute hash by a single displacement method
+            let hash_key = mixed_key + OFFSETS[mixed_key >> OFFSET_SHIFT];
 
-        // refer lookup table; the number of non-zero elements is 49205
-        LOOKUP[hash_key]
+            // refer lookup table; the number of non-zero elements is 49205
+            LOOKUP[hash_key]
+        }
     }
 }
 ```
 
 ## Hand Representation
 
-First, consider how to associate `hand` value with information about how many cards of each rank/suit are there.
+First, consider how to associate `key` value with information about how many cards of each rank/suit are there.
 
-We want to represent `hand` value as a simple sum of the card values: for example, if we assign `Deuce = 1` and `Trey = 5` then seven card combination of four deuces and three treys has `hand` value of `19 (= 4 * 1 + 3 * 5)`.
+We want to represent `key` value as a simple sum of the card values: for example, if we assign `Deuce = 1` and `Trey = 5` then seven card combination of four deuces and three treys has `key` value of `19 (= 4 * 1 + 3 * 5)`.
 
 The most obvious representation is to assign ranks to the power of 5 and suits to the power of 8, and this scheme requires 31-bit space for ranks and 12-bit space for suits.
 

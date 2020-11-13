@@ -62,21 +62,22 @@ impl Hand {
             mask: self.mask.wrapping_sub(m),
         }
     }
-}
 
-/// Returns hand strength in 16-bit integer.
-#[inline]
-pub fn evaluate_hand(hand: Hand) -> u16 {
-    let suit_key = (hand.key >> RANK_KEY_BITS) as usize;
-    let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
-    if is_flush >= 0 {
-        let flush_key = (hand.mask >> (16 * is_flush as usize)) & ((1 << NUMBER_OF_RANKS) - 1);
-        unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
-    } else {
-        let mixed_key = (hand.key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
-        let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) } as usize;
-        let hash_key = mixed_key.wrapping_add(offset);
-        unsafe { *LOOKUP.get_unchecked(hash_key) }
+    /// Returns hand strength in 16-bit integer.
+    #[inline]
+    pub fn evaluate(&self) -> u16 {
+        // assert_eq!(self.mask.count_ones(), 7);
+        let suit_key = (self.key >> RANK_KEY_BITS) as usize;
+        let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
+        if is_flush >= 0 {
+            let flush_key = (self.mask >> (16 * is_flush as usize)) & ((1 << NUMBER_OF_RANKS) - 1);
+            unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
+        } else {
+            let mixed_key = (self.key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
+            let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) } as usize;
+            let hash_key = mixed_key.wrapping_add(offset);
+            unsafe { *LOOKUP.get_unchecked(hash_key) }
+        }
     }
 }
 
@@ -93,7 +94,7 @@ mod tests {
         for c in &cards {
             hand = hand.add_card(c.id());
         }
-        evaluate_hand(hand)
+        hand.evaluate()
     }
 
     #[test]
@@ -127,7 +128,7 @@ mod tests {
                                 let hand = hand.add_card(p);
                                 for q in (p + 1)..NUMBER_OF_CARDS {
                                     let hand = hand.add_card(q);
-                                    let rank = evaluate_hand(hand);
+                                    let rank = hand.evaluate();
                                     let category = get_hand_category(rank);
                                     rankset.insert(rank);
                                     let c = counter.entry(category).or_insert(0);
