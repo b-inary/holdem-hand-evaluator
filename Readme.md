@@ -73,6 +73,7 @@ $ cargo run -p holdem-hand-evaluator-scripts --bin 04-lookup_tables --release
 
 ```sh
 $ cargo test --release
+$ cargo test -p holdem-hand-evaluator-scripts --release
 ```
 
 ## Run Benchmark

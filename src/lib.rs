@@ -18,6 +18,7 @@ pub enum HandCategory {
 }
 
 /// Returns the hand category from hand rank computed by `Hand::evaluate()`.
+#[inline]
 pub fn get_hand_category(hand_rank: u16) -> HandCategory {
     match hand_rank >> 12 {
         0 => HandCategory::HighCard,
@@ -43,7 +44,7 @@ impl Hand {
     /// Creates an empty `Hand` struct.
     #[inline]
     pub fn new() -> Self {
-        Hand { key: 0, mask: 0 }
+        Self { key: 0, mask: 0 }
     }
 
     /// Creates a new hand structure consists of `cards`.
@@ -51,7 +52,7 @@ impl Hand {
     /// (0 corresponds to the deuce of clubs, and 51 corresponds to the ace of spades)
     #[inline]
     pub fn from_vec(cards: &Vec<usize>) -> Self {
-        let mut hand = Hand::new();
+        let mut hand = Self::new();
         for card in cards {
             hand = hand.add_card(*card);
         }
@@ -70,7 +71,7 @@ impl Hand {
     #[inline]
     pub fn add_card(&self, card: usize) -> Self {
         let (k, m) = unsafe { *CARDS.get_unchecked(card) };
-        Hand {
+        Self {
             key: self.key.wrapping_add(k),
             mask: self.mask.wrapping_add(m),
         }
@@ -81,7 +82,7 @@ impl Hand {
     #[inline]
     pub fn remove_card(&self, card: usize) -> Self {
         let (k, m) = unsafe { *CARDS.get_unchecked(card) };
-        Hand {
+        Self {
             key: self.key.wrapping_sub(k),
             mask: self.mask.wrapping_sub(m),
         }
