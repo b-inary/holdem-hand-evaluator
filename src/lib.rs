@@ -51,12 +51,18 @@ impl Hand {
     /// Elements in `cards` must be in the range \[0, 51\].
     /// (0 corresponds to the deuce of clubs, and 51 corresponds to the ace of spades)
     #[inline]
-    pub fn from_vec(cards: &Vec<usize>) -> Self {
+    pub fn from_vec(cards: &[usize]) -> Self {
         let mut hand = Self::new();
         for card in cards {
             hand = hand.add_card(*card);
         }
         hand
+    }
+
+    /// Checks whether the hand is empty
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.mask == 0
     }
 
     /// Returns current number of cards in `self`.
@@ -103,6 +109,12 @@ impl Hand {
             let hash_key = mixed_key.wrapping_add(offset);
             unsafe { *LOOKUP.get_unchecked(hash_key) }
         }
+    }
+}
+
+impl Default for Hand {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
