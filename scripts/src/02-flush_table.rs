@@ -16,9 +16,6 @@ fn main() {
                                 let a = SUIT_BASES[i] + SUIT_BASES[j] + SUIT_BASES[k];
                                 let b = SUIT_BASES[m] + SUIT_BASES[n] + SUIT_BASES[p];
                                 let x = a + b + SUIT_BASES[q];
-                                if result[x as usize] != -2 {
-                                    continue;
-                                }
                                 let mut counter = [0; 4];
                                 counter[i] += 1;
                                 counter[j] += 1;
@@ -27,12 +24,16 @@ fn main() {
                                 counter[n] += 1;
                                 counter[p] += 1;
                                 counter[q] += 1;
-                                result[x as usize] = match counter {
+                                let val = match counter {
                                     [5..=7, _, _, _] => 0,
                                     [_, 5..=7, _, _] => 1,
                                     [_, _, 5..=7, _] => 2,
                                     [_, _, _, 5..=7] => 3,
                                     _ => -1,
+                                };
+                                match result[x as usize] {
+                                    -2 => result[x as usize] = val,
+                                    oldval => assert_eq!(oldval, val),
                                 };
                             }
                         }

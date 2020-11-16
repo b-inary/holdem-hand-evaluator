@@ -24,7 +24,7 @@ pub const RANK_KEY_BITS: usize = 64 - MAX_RANK_KEY.leading_zeros() as usize;
 pub const RANK_KEY_MASK: u64 = (1 << RANK_KEY_BITS) - 1;
 
 /// suit keys (club, diamond, heart, spade)
-pub const SUIT_BASES: [u64; 4] = [0, 1, 29, 37];
+pub const SUIT_BASES: [u64; 4] = [0, 1, 25, 32];
 
 /// (card key, bit mask) of cards
 #[rustfmt::skip]
