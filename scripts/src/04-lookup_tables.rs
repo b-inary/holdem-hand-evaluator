@@ -5,7 +5,6 @@ mod kev;
 use assets::constants::*;
 use assets::flush_table::FLUSH_TABLE;
 use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
-use kev::evaluator::eval_7cards;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -56,8 +55,10 @@ fn main() {
                                     let flush_key = mask >> (16 * is_flush as usize);
                                     let flush_key = flush_key & ((1 << NUMBER_OF_RANKS) - 1);
                                     if !lookup_flush.contains_key(&flush_key) {
-                                        lookup_flush
-                                            .insert(flush_key, eval_7cards(i, j, k, m, n, p, q));
+                                        lookup_flush.insert(
+                                            flush_key,
+                                            kev::eval_7cards(i, j, k, m, n, p, q),
+                                        );
                                     }
                                 } else {
                                     let mixed_key =
@@ -65,7 +66,10 @@ fn main() {
                                     let offset = OFFSETS[mixed_key >> OFFSET_SHIFT] as usize;
                                     let hash_key = mixed_key.wrapping_add(offset);
                                     if !lookup.contains_key(&hash_key) {
-                                        lookup.insert(hash_key, eval_7cards(i, j, k, m, n, p, q));
+                                        lookup.insert(
+                                            hash_key,
+                                            kev::eval_7cards(i, j, k, m, n, p, q),
+                                        );
                                     }
                                 }
                             }

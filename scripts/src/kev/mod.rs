@@ -1,3 +1,4 @@
 mod arrays;
-pub mod evaluator;
+mod evaluator;
 mod test;
+pub use evaluator::*;
