@@ -2,19 +2,20 @@ use assets::constants::*;
 use assets::flush_table::FLUSH_TABLE;
 use assets::lookup::{LOOKUP, LOOKUP_FLUSH};
 use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
+use std::ops::{Add, AddAssign};
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum HandCategory {
-    HighCard,
-    OnePair,
-    TwoPair,
-    ThreeOfAKind,
-    Straight,
-    Flush,
-    FullHouse,
-    FourOfAKind,
-    StraightFlush,
+    HighCard = 0,
+    OnePair = 1,
+    TwoPair = 2,
+    ThreeOfAKind = 3,
+    Straight = 4,
+    Flush = 5,
+    FullHouse = 6,
+    FourOfAKind = 7,
+    StraightFlush = 8,
 }
 
 /// Returns the hand category from hand rank computed by `Hand::evaluate()`.
@@ -30,14 +31,14 @@ pub fn get_hand_category(hand_rank: u16) -> HandCategory {
         6 => HandCategory::FullHouse,
         7 => HandCategory::FourOfAKind,
         8 => HandCategory::StraightFlush,
-        _ => panic!(),
+        _ => unreachable!(),
     }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Hand {
-    key: u64,
-    mask: u64,
+    pub key: u64,
+    pub mask: u64,
 }
 
 impl Hand {
@@ -105,10 +106,27 @@ impl Hand {
             unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
         } else {
             let mixed_key = (self.key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
-            let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) } as usize;
+            let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) as usize };
             let hash_key = mixed_key.wrapping_add(offset);
             unsafe { *LOOKUP.get_unchecked(hash_key) }
         }
+    }
+}
+
+impl Add for Hand {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            key: self.key.wrapping_add(rhs.key),
+            mask: self.mask.wrapping_add(rhs.mask),
+        }
+    }
+}
+
+impl AddAssign for Hand {
+    fn add_assign(&mut self, rhs: Self) {
+        self.key = self.key.wrapping_add(rhs.key);
+        self.mask = self.mask.wrapping_add(rhs.mask);
     }
 }
 
