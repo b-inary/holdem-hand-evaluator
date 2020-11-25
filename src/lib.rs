@@ -1,5 +1,7 @@
-mod equity;
+mod enumerate;
 mod hand;
-mod test;
-pub use equity::*;
+mod hand_test;
+mod heads_up;
+pub use enumerate::*;
 pub use hand::*;
+pub use heads_up::*;

@@ -1,5 +1,5 @@
 /// 13x13 table that stores heads-up win rate (vs. random hands)
-pub const HEADSUP_WIN_RATES: [(f64, f64); 169] = [
+pub const HEADS_UP_WIN_RATES: [(f64, f64); 169] = [
     (0.4938517602539015, 0.4871713786851883),
     (0.3309197160488941, 0.611231104108732),
     (0.3391794438180063, 0.6025991493785882),
