@@ -27,7 +27,6 @@ pub const RANK_KEY_MASK: u64 = (1 << RANK_KEY_BITS) - 1;
 pub const SUIT_BASES: [u64; 4] = [1, 12, 77, 84];
 
 /// (card key, bit mask) of cards
-#[rustfmt::skip]
 pub const CARDS: [(u64, u64); NUMBER_OF_CARDS] = [
     /* 2c */ (RANK_BASES[0] + (SUIT_BASES[0] << 32), 0x1),
     /* 2d */ (RANK_BASES[0] + (SUIT_BASES[1] << 32), 0x10000),

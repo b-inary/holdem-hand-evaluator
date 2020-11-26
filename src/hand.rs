@@ -52,7 +52,7 @@ impl Hand {
     /// Elements in `cards` must be in the range \[0, 51\].
     /// (0 corresponds to the deuce of clubs, and 51 corresponds to the ace of spades)
     #[inline]
-    pub fn from_vec(cards: &[usize]) -> Self {
+    pub fn from_slice(cards: &[usize]) -> Self {
         let mut hand = Self::new();
         for card in cards {
             hand = hand.add_card(*card);
@@ -198,8 +198,8 @@ mod tests {
 
     #[test]
     fn test_parser() {
-        let cards = vec![2, 3, 5, 7, 11, 13, 17];
-        let hand_from_vec = Hand::from_vec(&cards);
+        let cards = [2, 3, 5, 7, 11, 13, 17];
+        let hand_from_vec = Hand::from_slice(&cards);
         let hand_from_str = "2h2s3d3s4s5d6d".parse::<Hand>();
         assert_eq!(hand_from_str, Ok(hand_from_vec));
         assert_eq!("".parse::<Hand>(), Ok(Hand::new()));

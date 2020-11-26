@@ -35,8 +35,8 @@ fn main() {
     hand1 = hand1.add_card(13); // 5d
     hand1 = hand1.add_card(17); // 6d
 
-    // construct hand from Vec (also there are no error checks)
-    let hand2 = Hand::from_vec(&vec![19, 23, 29, 31, 37, 41, 43]); // 6s7s9d9sJdQdQs
+    // construct hand from slice (also there are no error checks)
+    let hand2 = Hand::from_slice(&[19, 23, 29, 31, 37, 41, 43]); // 6s7s9d9sJdQdQs
 
     // construct hand from String
     let hand3 = "AhKhQhJhTh8c6d".parse::<Hand>().unwrap();
