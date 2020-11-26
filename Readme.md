@@ -3,7 +3,7 @@
 Super fast hand rank evaluator for Texas hold'em poker written in Rust
 
 * ~800M eval/s sequential @Ryzen 7 3700X single-threaded
-* Use small lookup tables (~150kB)
+* Use small lookup tables (about 200KB)
 * No external dependencies
 * Well-tested
 
@@ -42,12 +42,12 @@ fn main() {
     let hand3 = "AhKhQhJhTh8c6d".parse::<Hand>().unwrap();
 
     // evaluate() function computes the hand rank (stronger hand yields higher value)
-    // only supports 7-card hand (again there are no error checks)
-    assert_eq!(hand1.len(), 7);
+    // only supports 5-7 card hand (again there are no error checks)
+    assert!(5 <= hand1.len() && hand1.len() <= 7);
     let rank1 = hand1.evaluate();
-    assert_eq!(hand2.len(), 7);
+    assert!(5 <= hand2.len() && hand2.len() <= 7);
     let rank2 = hand2.evaluate();
-    assert_eq!(hand3.len(), 7);
+    assert!(5 <= hand3.len() && hand3.len() <= 7);
     let rank3 = hand3.evaluate();
 
     println!("rank1: {}", rank1); // 16385
@@ -63,7 +63,7 @@ fn main() {
 
 ## How It Works
 
-The main routine, [evaluate()](src/hand.rs#L97) function, consists of only about 10 lines of code, so please read it first. There are several magic constants used; how they are generated is explained in [scripts/Readme.md](scripts/Readme.md).
+The main routine, [evaluate()](src/hand.rs#L98) function, consists of only about 10 lines of code, so please read it first. There are several magic constants used; how they are generated is explained in [scripts/Readme.md](scripts/Readme.md).
 
 ## Generate Assets (optional)
 

@@ -96,10 +96,10 @@ impl Hand {
     }
 
     /// Returns hand strength in 16-bit integer.
-    /// This function may crush when `self.len() != 7`.
+    /// This function may crush when `self.len() < 5 || self.len() > 7`.
     #[inline]
     pub fn evaluate(&self) -> u16 {
-        let suit_key = (self.key >> RANK_KEY_BITS) as usize;
+        let suit_key = (self.key >> 32) as usize;
         let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
         if is_flush >= 0 {
             let flush_key = (self.mask >> (16 * is_flush as usize)) & ((1 << NUMBER_OF_RANKS) - 1);
@@ -188,7 +188,7 @@ impl FromStr for Hand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::{HashMap, HashSet};
+    use std::collections::HashSet;
 
     fn evaluate_hand_str(hand_str: &str) -> u16 {
         let hand = hand_str.parse::<Hand>().unwrap();
@@ -218,21 +218,86 @@ mod tests {
     }
 
     #[test]
-    fn test_lookup_table() {
+    fn test_all_5card_combinations() {
         let mut rankset = HashSet::new();
-        for rank in &LOOKUP {
-            rankset.insert(rank);
+        let mut counter = vec![0; HandCategory::StraightFlush as usize + 1];
+
+        for i in 0..(NUMBER_OF_CARDS - 4) {
+            let hand = Hand::new().add_card(i);
+            for j in (i + 1)..(NUMBER_OF_CARDS - 3) {
+                let hand = hand.add_card(j);
+                for k in (j + 1)..(NUMBER_OF_CARDS - 2) {
+                    let hand = hand.add_card(k);
+                    for m in (k + 1)..(NUMBER_OF_CARDS - 1) {
+                        let hand = hand.add_card(m);
+                        for n in (m + 1)..NUMBER_OF_CARDS {
+                            let hand = hand.add_card(n);
+                            let rank = hand.evaluate();
+                            let category = get_hand_category(rank);
+                            rankset.insert(rank);
+                            counter[category as usize] += 1;
+                        }
+                    }
+                }
+            }
         }
-        for rank in &LOOKUP_FLUSH {
-            rankset.insert(rank);
+
+        assert_eq!(rankset.len(), 7462);
+        assert_eq!(counter[HandCategory::StraightFlush as usize], 40);
+        assert_eq!(counter[HandCategory::FourOfAKind as usize], 624);
+        assert_eq!(counter[HandCategory::FullHouse as usize], 3744);
+        assert_eq!(counter[HandCategory::Flush as usize], 5108);
+        assert_eq!(counter[HandCategory::Straight as usize], 10200);
+        assert_eq!(counter[HandCategory::ThreeOfAKind as usize], 54912);
+        assert_eq!(counter[HandCategory::TwoPair as usize], 123552);
+        assert_eq!(counter[HandCategory::OnePair as usize], 1098240);
+        assert_eq!(counter[HandCategory::HighCard as usize], 1302540);
+    }
+
+    #[test]
+    fn test_all_6card_combinations() {
+        let mut rankset = HashSet::new();
+        let mut counter = vec![0; HandCategory::StraightFlush as usize + 1];
+
+        for i in 0..(NUMBER_OF_CARDS - 5) {
+            let hand = Hand::new().add_card(i);
+            for j in (i + 1)..(NUMBER_OF_CARDS - 4) {
+                let hand = hand.add_card(j);
+                for k in (j + 1)..(NUMBER_OF_CARDS - 3) {
+                    let hand = hand.add_card(k);
+                    for m in (k + 1)..(NUMBER_OF_CARDS - 2) {
+                        let hand = hand.add_card(m);
+                        for n in (m + 1)..(NUMBER_OF_CARDS - 1) {
+                            let hand = hand.add_card(n);
+                            for p in (n + 1)..NUMBER_OF_CARDS {
+                                let hand = hand.add_card(p);
+                                let rank = hand.evaluate();
+                                let category = get_hand_category(rank);
+                                rankset.insert(rank);
+                                counter[category as usize] += 1;
+                            }
+                        }
+                    }
+                }
+            }
         }
-        assert_eq!(rankset.len(), 4825); // 4824 + 1 (zero)
+
+        assert_eq!(rankset.len(), 6075);
+        assert_eq!(counter[HandCategory::StraightFlush as usize], 1844);
+        assert_eq!(counter[HandCategory::FourOfAKind as usize], 14664);
+        assert_eq!(counter[HandCategory::FullHouse as usize], 165984);
+        assert_eq!(counter[HandCategory::Flush as usize], 205792);
+        assert_eq!(counter[HandCategory::Straight as usize], 361620);
+        assert_eq!(counter[HandCategory::ThreeOfAKind as usize], 732160);
+        assert_eq!(counter[HandCategory::TwoPair as usize], 2532816);
+        assert_eq!(counter[HandCategory::OnePair as usize], 9730740);
+        assert_eq!(counter[HandCategory::HighCard as usize], 6612900);
     }
 
     #[test]
     fn test_all_7card_combinations() {
         let mut rankset = HashSet::new();
-        let mut counter = HashMap::new();
+        let mut counter = vec![0; HandCategory::StraightFlush as usize + 1];
 
         for i in 0..(NUMBER_OF_CARDS - 6) {
             let hand = Hand::new().add_card(i);
@@ -251,8 +316,7 @@ mod tests {
                                     let rank = hand.evaluate();
                                     let category = get_hand_category(rank);
                                     rankset.insert(rank);
-                                    let c = counter.entry(category).or_insert(0);
-                                    *c += 1;
+                                    counter[category as usize] += 1;
                                 }
                             }
                         }
@@ -262,15 +326,15 @@ mod tests {
         }
 
         assert_eq!(rankset.len(), 4824);
-        assert_eq!(counter.get(&HandCategory::StraightFlush), Some(&41584));
-        assert_eq!(counter.get(&HandCategory::FourOfAKind), Some(&224848));
-        assert_eq!(counter.get(&HandCategory::FullHouse), Some(&3473184));
-        assert_eq!(counter.get(&HandCategory::Flush), Some(&4047644));
-        assert_eq!(counter.get(&HandCategory::Straight), Some(&6180020));
-        assert_eq!(counter.get(&HandCategory::ThreeOfAKind), Some(&6461620));
-        assert_eq!(counter.get(&HandCategory::TwoPair), Some(&31433400));
-        assert_eq!(counter.get(&HandCategory::OnePair), Some(&58627800));
-        assert_eq!(counter.get(&HandCategory::HighCard), Some(&23294460));
+        assert_eq!(counter[HandCategory::StraightFlush as usize], 41584);
+        assert_eq!(counter[HandCategory::FourOfAKind as usize], 224848);
+        assert_eq!(counter[HandCategory::FullHouse as usize], 3473184);
+        assert_eq!(counter[HandCategory::Flush as usize], 4047644);
+        assert_eq!(counter[HandCategory::Straight as usize], 6180020);
+        assert_eq!(counter[HandCategory::ThreeOfAKind as usize], 6461620);
+        assert_eq!(counter[HandCategory::TwoPair as usize], 31433400);
+        assert_eq!(counter[HandCategory::OnePair as usize], 58627800);
+        assert_eq!(counter[HandCategory::HighCard as usize], 23294460);
     }
 
     #[test]

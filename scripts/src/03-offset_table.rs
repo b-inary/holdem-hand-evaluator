@@ -24,15 +24,19 @@ fn main() {
 
     let mut keys = Vec::new();
     for i in 0..(NUMBER_OF_RANKS - 1) {
-        for j in i..(NUMBER_OF_RANKS - 1) {
-            for k in j..(NUMBER_OF_RANKS - 1) {
+        for j in i..NUMBER_OF_RANKS {
+            for k in j..NUMBER_OF_RANKS {
                 for m in k..NUMBER_OF_RANKS {
                     for n in cmp::max(m, i + 1)..NUMBER_OF_RANKS {
+                        let x = RANK_BASES[i] + RANK_BASES[j] + RANK_BASES[k];
+                        let x = x + RANK_BASES[m] + RANK_BASES[n];
+                        keys.push(x);
                         for p in cmp::max(n, j + 1)..NUMBER_OF_RANKS {
+                            let x = x + RANK_BASES[p];
+                            keys.push(x);
                             for q in cmp::max(p, k + 1)..NUMBER_OF_RANKS {
-                                let a = RANK_BASES[i] + RANK_BASES[j] + RANK_BASES[k];
-                                let b = RANK_BASES[m] + RANK_BASES[n] + RANK_BASES[p];
-                                keys.push(a + b + RANK_BASES[q]);
+                                let x = x + RANK_BASES[q];
+                                keys.push(x);
                             }
                         }
                     }
@@ -40,6 +44,8 @@ fn main() {
             }
         }
     }
+
+    println!("number of elements: {}", keys.len());
 
     let mut best_size = usize::MAX;
     let mut best_mult = 0;

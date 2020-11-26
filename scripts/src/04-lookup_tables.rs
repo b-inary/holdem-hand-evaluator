@@ -26,15 +26,95 @@ fn adjust_hand_rank(rank: u16) -> u16 {
 }
 
 #[inline]
-pub fn add_card(key: u64, mask: u64, card: usize) -> (u64, u64) {
+fn add_card(key: u64, mask: u64, card: usize) -> (u64, u64) {
     let (k, m) = unsafe { *CARDS.get_unchecked(card) };
     (key.wrapping_add(k), mask.wrapping_add(m))
+}
+
+#[inline]
+fn update(
+    key: u64,
+    mask: u64,
+    val: u16,
+    lookup: &mut HashMap<usize, u16>,
+    lookup_flush: &mut HashMap<u64, u16>,
+) {
+    let suit_key = (key >> 32) as usize;
+    let is_flush = FLUSH_TABLE[suit_key];
+    if is_flush >= 0 {
+        let flush_key = mask >> (16 * is_flush as usize);
+        let flush_key = flush_key & ((1 << NUMBER_OF_RANKS) - 1);
+        match lookup_flush.insert(flush_key, val) {
+            Some(v) => assert_eq!(val, v),
+            None => (),
+        };
+    } else {
+        let mixed_key = (key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
+        let offset = OFFSETS[mixed_key >> OFFSET_SHIFT] as usize;
+        let hash_key = mixed_key.wrapping_add(offset);
+        match lookup.insert(hash_key, val) {
+            Some(v) => assert_eq!(val, v),
+            None => (),
+        }
+    }
 }
 
 fn main() {
     let mut lookup = HashMap::new();
     let mut lookup_flush = HashMap::new();
 
+    // 5-cards
+    for i in 0..(NUMBER_OF_CARDS - 4) {
+        let (key, mask) = add_card(0, 0, i);
+        for j in (i + 1)..(NUMBER_OF_CARDS - 3) {
+            let (key, mask) = add_card(key, mask, j);
+            for k in (j + 1)..(NUMBER_OF_CARDS - 2) {
+                let (key, mask) = add_card(key, mask, k);
+                for m in (k + 1)..(NUMBER_OF_CARDS - 1) {
+                    let (key, mask) = add_card(key, mask, m);
+                    for n in (m + 1)..NUMBER_OF_CARDS {
+                        let (key, mask) = add_card(key, mask, n);
+                        update(
+                            key,
+                            mask,
+                            kev::eval_5cards(i, j, k, m, n),
+                            &mut lookup,
+                            &mut lookup_flush,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    // 6-cards
+    for i in 0..(NUMBER_OF_CARDS - 5) {
+        let (key, mask) = add_card(0, 0, i);
+        for j in (i + 1)..(NUMBER_OF_CARDS - 4) {
+            let (key, mask) = add_card(key, mask, j);
+            for k in (j + 1)..(NUMBER_OF_CARDS - 3) {
+                let (key, mask) = add_card(key, mask, k);
+                for m in (k + 1)..(NUMBER_OF_CARDS - 2) {
+                    let (key, mask) = add_card(key, mask, m);
+                    for n in (m + 1)..(NUMBER_OF_CARDS - 1) {
+                        let (key, mask) = add_card(key, mask, n);
+                        for p in (n + 1)..NUMBER_OF_CARDS {
+                            let (key, mask) = add_card(key, mask, p);
+                            update(
+                                key,
+                                mask,
+                                kev::eval_6cards(i, j, k, m, n, p),
+                                &mut lookup,
+                                &mut lookup_flush,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 7-cards
     for i in 0..(NUMBER_OF_CARDS - 6) {
         let (key, mask) = add_card(0, 0, i);
         for j in (i + 1)..(NUMBER_OF_CARDS - 5) {
@@ -49,29 +129,13 @@ fn main() {
                             let (key, mask) = add_card(key, mask, p);
                             for q in (p + 1)..NUMBER_OF_CARDS {
                                 let (key, mask) = add_card(key, mask, q);
-                                let suit_key = (key >> RANK_KEY_BITS) as usize;
-                                let is_flush = FLUSH_TABLE[suit_key];
-                                if is_flush >= 0 {
-                                    let flush_key = mask >> (16 * is_flush as usize);
-                                    let flush_key = flush_key & ((1 << NUMBER_OF_RANKS) - 1);
-                                    if !lookup_flush.contains_key(&flush_key) {
-                                        lookup_flush.insert(
-                                            flush_key,
-                                            kev::eval_7cards(i, j, k, m, n, p, q),
-                                        );
-                                    }
-                                } else {
-                                    let mixed_key =
-                                        (key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
-                                    let offset = OFFSETS[mixed_key >> OFFSET_SHIFT] as usize;
-                                    let hash_key = mixed_key.wrapping_add(offset);
-                                    if !lookup.contains_key(&hash_key) {
-                                        lookup.insert(
-                                            hash_key,
-                                            kev::eval_7cards(i, j, k, m, n, p, q),
-                                        );
-                                    }
-                                }
+                                update(
+                                    key,
+                                    mask,
+                                    kev::eval_7cards(i, j, k, m, n, p, q),
+                                    &mut lookup,
+                                    &mut lookup_flush,
+                                );
                             }
                         }
                     }

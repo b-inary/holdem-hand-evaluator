@@ -14,6 +14,7 @@ const CARDS: [u32; 52] = [
     0x8002b25, 0x8001b25, 0x10008c29, 0x10004c29, 0x10002c29, 0x10001c29,
 ];
 
+#[inline]
 fn find_fast(u: u32) -> usize {
     let u = u.wrapping_add(0xe91aaa35);
     let u = u ^ (u >> 16);
@@ -24,6 +25,7 @@ fn find_fast(u: u32) -> usize {
     a as usize ^ HASH_ADJUST[b as usize] as usize
 }
 
+#[inline]
 fn eval_5cards_fast(c1: u32, c2: u32, c3: u32, c4: u32, c5: u32) -> u16 {
     let q = ((c1 | c2 | c3 | c4 | c5) >> 16) as usize;
     if (c1 & c2 & c3 & c4 & c5 & 0xf000) != 0 {
@@ -36,6 +38,22 @@ fn eval_5cards_fast(c1: u32, c2: u32, c3: u32, c4: u32, c5: u32) -> u16 {
     HASH_VALUES[find_fast((c1 & 0xff) * (c2 & 0xff) * (c3 & 0xff) * (c4 & 0xff) * (c5 & 0xff))]
 }
 
+#[inline]
+fn eval_6cards_fast(c1: u32, c2: u32, c3: u32, c4: u32, c5: u32, c6: u32) -> u16 {
+    let hand = [c1, c2, c3, c4, c5, c6];
+    let mut best = 9999;
+    for perm in &PERM6 {
+        let mut subhand = Vec::new();
+        for i in 0..5 {
+            subhand.push(hand[perm[i]]);
+        }
+        let q = eval_5cards_fast(subhand[0], subhand[1], subhand[2], subhand[3], subhand[4]);
+        best = cmp::min(best, q);
+    }
+    best
+}
+
+#[inline]
 fn eval_7cards_fast(c1: u32, c2: u32, c3: u32, c4: u32, c5: u32, c6: u32, c7: u32) -> u16 {
     let hand = [c1, c2, c3, c4, c5, c6, c7];
     let mut best = 9999;
@@ -50,11 +68,19 @@ fn eval_7cards_fast(c1: u32, c2: u32, c3: u32, c4: u32, c5: u32, c6: u32, c7: u3
     best
 }
 
-#[cfg(test)]
+#[inline]
 pub fn eval_5cards(c1: usize, c2: usize, c3: usize, c4: usize, c5: usize) -> u16 {
     eval_5cards_fast(CARDS[c1], CARDS[c2], CARDS[c3], CARDS[c4], CARDS[c5])
 }
 
+#[inline]
+pub fn eval_6cards(c1: usize, c2: usize, c3: usize, c4: usize, c5: usize, c6: usize) -> u16 {
+    eval_6cards_fast(
+        CARDS[c1], CARDS[c2], CARDS[c3], CARDS[c4], CARDS[c5], CARDS[c6],
+    )
+}
+
+#[inline]
 pub fn eval_7cards(
     c1: usize,
     c2: usize,
