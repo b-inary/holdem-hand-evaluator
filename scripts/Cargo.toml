@@ -14,13 +14,9 @@ name = "01-rank_bases"
 path = "src/01-rank_bases.rs"
 
 [[bin]]
-name = "02-flush_table"
-path = "src/02-flush_table.rs"
+name = "02-offset_table"
+path = "src/02-offset_table.rs"
 
 [[bin]]
-name = "03-offset_table"
-path = "src/03-offset_table.rs"
-
-[[bin]]
-name = "04-lookup_tables"
-path = "src/04-lookup_tables.rs"
+name = "03-lookup_tables"
+path = "src/03-lookup_tables.rs"

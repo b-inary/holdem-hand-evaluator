@@ -3,7 +3,6 @@
 mod kev;
 
 use assets::constants::*;
-use assets::flush_table::FLUSH_TABLE;
 use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
 use std::collections::HashMap;
 use std::fs::File;
@@ -37,14 +36,12 @@ fn update(
     mask: u64,
     val: u16,
     lookup: &mut HashMap<usize, u16>,
-    lookup_flush: &mut HashMap<u64, u16>,
+    lookup_flush: &mut HashMap<usize, u16>,
 ) {
-    let suit_key = (key >> 32) as usize;
-    let is_flush = FLUSH_TABLE[suit_key];
-    if is_flush >= 0 {
-        let flush_key = mask >> (16 * is_flush as usize);
-        let flush_key = flush_key & ((1 << NUMBER_OF_RANKS) - 1);
-        match lookup_flush.insert(flush_key, val) {
+    let is_flush = key & FLUSH_MASK;
+    if is_flush > 0 {
+        let flush_key = (mask >> (4 * is_flush.leading_zeros())) as u16;
+        match lookup_flush.insert(flush_key as usize, val) {
             Some(v) => assert_eq!(val, v),
             None => (),
         };
@@ -65,7 +62,7 @@ fn main() {
 
     // 5-cards
     for i in 0..(NUMBER_OF_CARDS - 4) {
-        let (key, mask) = add_card(0, 0, i);
+        let (key, mask) = add_card(0x3333 << SUIT_SHIFT, 0, i);
         for j in (i + 1)..(NUMBER_OF_CARDS - 3) {
             let (key, mask) = add_card(key, mask, j);
             for k in (j + 1)..(NUMBER_OF_CARDS - 2) {
@@ -89,7 +86,7 @@ fn main() {
 
     // 6-cards
     for i in 0..(NUMBER_OF_CARDS - 5) {
-        let (key, mask) = add_card(0, 0, i);
+        let (key, mask) = add_card(0x3333 << SUIT_SHIFT, 0, i);
         for j in (i + 1)..(NUMBER_OF_CARDS - 4) {
             let (key, mask) = add_card(key, mask, j);
             for k in (j + 1)..(NUMBER_OF_CARDS - 3) {
@@ -116,7 +113,7 @@ fn main() {
 
     // 7-cards
     for i in 0..(NUMBER_OF_CARDS - 6) {
-        let (key, mask) = add_card(0, 0, i);
+        let (key, mask) = add_card(0x3333 << SUIT_SHIFT, 0, i);
         for j in (i + 1)..(NUMBER_OF_CARDS - 5) {
             let (key, mask) = add_card(key, mask, j);
             for k in (j + 1)..(NUMBER_OF_CARDS - 4) {
@@ -145,14 +142,14 @@ fn main() {
     }
 
     let mut lookup_vec = vec![0; lookup.keys().max().unwrap() + 1];
-    let mut lookup_flush_vec = vec![0; *lookup_flush.keys().max().unwrap() as usize + 1];
+    let mut lookup_flush_vec = vec![0; *lookup_flush.keys().max().unwrap() + 1];
 
     for (key, value) in &lookup {
         lookup_vec[*key] = adjust_hand_rank(*value);
     }
 
     for (key, value) in &lookup_flush {
-        lookup_flush_vec[*key as usize] = adjust_hand_rank(*value);
+        lookup_flush_vec[*key] = adjust_hand_rank(*value);
     }
 
     let mut file = File::create("assets/src/lookup.rs").unwrap();

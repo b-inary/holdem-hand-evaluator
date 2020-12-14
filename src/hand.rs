@@ -1,5 +1,4 @@
 use assets::constants::*;
-use assets::flush_table::FLUSH_TABLE;
 use assets::lookup::{LOOKUP, LOOKUP_FLUSH};
 use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
 use std::ops::{Add, AddAssign};
@@ -45,7 +44,10 @@ impl Hand {
     /// Creates an empty `Hand` struct.
     #[inline]
     pub fn new() -> Self {
-        Self { key: 0, mask: 0 }
+        Self {
+            key: 0x3333 << SUIT_SHIFT,
+            mask: 0,
+        }
     }
 
     /// Creates a new hand structure consists of `cards`.
@@ -99,10 +101,9 @@ impl Hand {
     /// This function may crush when `self.len() < 5 || self.len() > 7`.
     #[inline]
     pub fn evaluate(&self) -> u16 {
-        let suit_key = (self.key >> 32) as usize;
-        let is_flush = unsafe { *FLUSH_TABLE.get_unchecked(suit_key) };
-        if is_flush >= 0 {
-            let flush_key = (self.mask >> (16 * is_flush as usize)) & ((1 << NUMBER_OF_RANKS) - 1);
+        let is_flush = self.key & FLUSH_MASK;
+        if is_flush > 0 {
+            let flush_key = (self.mask >> (4 * is_flush.leading_zeros())) as u16;
             unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
         } else {
             let mixed_key = (self.key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
