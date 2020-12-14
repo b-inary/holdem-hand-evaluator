@@ -3,7 +3,7 @@
 mod kev;
 
 use assets::constants::*;
-use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
+use assets::offsets::OFFSETS;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -46,7 +46,7 @@ fn update(
             None => (),
         };
     } else {
-        let mixed_key = (key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
+        let mixed_key = key as u32 as usize;
         let offset = OFFSETS[mixed_key >> OFFSET_SHIFT] as usize;
         let hash_key = mixed_key.wrapping_add(offset);
         match lookup.insert(hash_key, val) {

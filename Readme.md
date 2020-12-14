@@ -2,8 +2,8 @@
 
 Super fast hand rank evaluator for Texas hold'em poker written in Rust
 
-* ~830M eval/s sequential @Ryzen 7 3700X single-threaded
-* Use small lookup tables (about 200KB)
+* ~980M eval/s sequential @Ryzen 7 3700X single-threaded
+* Use small lookup tables (about 227KB)
 * No external dependencies
 * Well-tested
 
@@ -71,9 +71,8 @@ The main routine, [evaluate()](src/hand.rs#L100) function, consists of only abou
 Sources in [scripts](scripts) directory generate constants used in [assets](assets) directory.
 
 ```sh
-$ cargo run -p holdem-hand-evaluator-scripts --bin 01-rank_bases --release
-$ cargo run -p holdem-hand-evaluator-scripts --bin 02-offset_table --release
-$ cargo run -p holdem-hand-evaluator-scripts --bin 03-lookup_tables --release
+$ cargo run -p holdem-hand-evaluator-scripts --bin 01-offset_table --release
+$ cargo run -p holdem-hand-evaluator-scripts --bin 02-lookup_tables --release
 ```
 
 ## Run Tests

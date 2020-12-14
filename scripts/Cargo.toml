@@ -10,13 +10,9 @@ edition = "2018"
 assets = { path = "../assets", package = "holdem-hand-evaluator-assets" }
 
 [[bin]]
-name = "01-rank_bases"
-path = "src/01-rank_bases.rs"
+name = "01-offset_table"
+path = "src/01-offset_table.rs"
 
 [[bin]]
-name = "02-offset_table"
-path = "src/02-offset_table.rs"
-
-[[bin]]
-name = "03-lookup_tables"
-path = "src/03-lookup_tables.rs"
+name = "02-lookup_tables"
+path = "src/02-lookup_tables.rs"

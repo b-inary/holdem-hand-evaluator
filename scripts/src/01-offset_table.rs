@@ -48,10 +48,11 @@ fn main() {
     println!("number of elements: {}", keys.len());
 
     let mut best_size = usize::MAX;
-    let mut best_mult = 0;
+    // let mut best_mult = 0;
     let mut best_offsets = Vec::new();
 
-    for mult in (1..1000).step_by(2) {
+    let max_mult = 2;
+    for mult in (1..max_mult).step_by(2) {
         let mut rows: Vec<Row> = vec![
             Row {
                 cols: Vec::new(),
@@ -81,7 +82,7 @@ fn main() {
 
         let mut least_empty = 0;
         let mut filled = vec![false; 1 << RANK_KEY_BITS];
-        let mut offsets = vec![0; rows.len()];
+        let mut offsets = vec![i32::MIN; rows.len()];
 
         for Row { cols, idx } in &rows {
             if cols.is_empty() {
@@ -110,7 +111,7 @@ fn main() {
 
         if table_size < best_size {
             best_size = table_size;
-            best_mult = mult;
+            // best_mult = mult;
             best_offsets = offsets;
             print!(
                 "\rcurrent size of hash table: {} (mult = {})    \x08\x08\x08\x08",
@@ -126,11 +127,14 @@ fn main() {
     }
 
     for (i, offset) in best_offsets.iter_mut().enumerate() {
-        *offset -= (i << OFFSET_SHIFT) as i32;
+        *offset = match *offset {
+            i32::MIN => 0,
+            _ => *offset - (i << OFFSET_SHIFT) as i32,
+        }
     }
 
     let mut file = File::create("assets/src/offsets.rs").unwrap();
-    writeln!(file, "pub const MIX_MULTIPLIER: u64 = {};", best_mult).unwrap();
+    // writeln!(file, "pub const MIX_MULTIPLIER: u64 = {};", best_mult).unwrap();
     writeln!(
         file,
         "pub const OFFSETS: [i32; {}] = {:?};",

@@ -1,6 +1,6 @@
 use assets::constants::*;
 use assets::lookup::{LOOKUP, LOOKUP_FLUSH};
-use assets::offsets::{MIX_MULTIPLIER, OFFSETS};
+use assets::offsets::OFFSETS;
 use std::ops::{Add, AddAssign};
 use std::str::FromStr;
 
@@ -106,9 +106,9 @@ impl Hand {
             let flush_key = (self.mask >> (4 * is_flush.leading_zeros())) as u16;
             unsafe { *LOOKUP_FLUSH.get_unchecked(flush_key as usize) }
         } else {
-            let mixed_key = (self.key.wrapping_mul(MIX_MULTIPLIER) & RANK_KEY_MASK) as usize;
-            let offset = unsafe { *OFFSETS.get_unchecked(mixed_key >> OFFSET_SHIFT) as usize };
-            let hash_key = mixed_key.wrapping_add(offset);
+            let rank_key = self.key as u32 as usize;
+            let offset = unsafe { *OFFSETS.get_unchecked(rank_key >> OFFSET_SHIFT) as usize };
+            let hash_key = rank_key.wrapping_add(offset);
             unsafe { *LOOKUP.get_unchecked(hash_key) }
         }
     }
