@@ -3,7 +3,7 @@
 Super fast hand rank evaluator for Texas hold'em poker written in Rust
 
 * ~980M eval/s sequential @Ryzen 7 3700X single-threaded
-* Use small lookup tables (about 227KB)
+* Use small lookup tables (about 212KB)
 * No external dependencies
 * Well-tested
 

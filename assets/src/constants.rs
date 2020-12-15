@@ -8,21 +8,14 @@ pub const NUMBER_OF_CARDS: usize = 4 * NUMBER_OF_RANKS;
 pub const OFFSET_SHIFT: usize = 11;
 
 /// rank keys that guarantee a unique sum for every rank combination of 5-7 cards.
-/// See: https://github.com/zekyll/OMPEval
 pub const RANK_BASES: [u64; NUMBER_OF_RANKS] = [
-    0x002000, 0x008001, 0x011000, 0x03a000, 0x091000, 0x176005, 0x366000, 0x41a013, 0x47802e,
-    0x479068, 0x48c0e4, 0x48f211, 0x494493,
+    0x000800, 0x002000, 0x024800, 0x025005, 0x03102e, 0x05f0e4, 0x13dc93, 0x344211, 0x35a068,
+    0x377813, 0x378001, 0x378800, 0x380000,
 ];
 
 /// max rank key value (4 aces + 3 kings)
 pub const MAX_RANK_KEY: u64 =
     4 * RANK_BASES[NUMBER_OF_RANKS - 1] + 3 * RANK_BASES[NUMBER_OF_RANKS - 2];
-
-/// number of bits of rank key
-pub const RANK_KEY_BITS: usize = 64 - MAX_RANK_KEY.leading_zeros() as usize;
-
-/// bit mask for rank key
-pub const RANK_KEY_MASK: u64 = (1 << RANK_KEY_BITS) - 1;
 
 /// suit keys (club, diamond, heart, spade)
 pub const SUIT_BASES: [u64; 4] = [0x1000, 0x0100, 0x0010, 0x0001];
