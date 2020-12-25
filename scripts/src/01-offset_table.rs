@@ -67,7 +67,7 @@ fn main() {
     }
 
     // apply first-fit-decreasing method
-    rows.sort_unstable_by_key(|row| row.cols.len());
+    rows.sort_by_key(|row| row.cols.len());
     rows.reverse();
 
     let mut least_empty = 0;

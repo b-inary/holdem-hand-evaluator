@@ -36,8 +36,8 @@ pub fn get_hand_category(hand_rank: u16) -> HandCategory {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Hand {
-    pub key: u64,
-    pub mask: u64,
+    key: u64,
+    mask: u64,
 }
 
 impl Hand {
@@ -72,6 +72,18 @@ impl Hand {
     #[inline]
     pub fn len(&self) -> usize {
         self.mask.count_ones() as usize
+    }
+
+    /// Returns the bit mask of `self`.
+    #[inline]
+    pub fn get_mask(&self) -> u64 {
+        self.mask
+    }
+
+    /// Returns whether the `card` is included in `self`.
+    #[inline]
+    pub fn contains(&self, card: usize) -> bool {
+        (self.mask & unsafe { *CARDS.get_unchecked(card) }.1) != 0
     }
 
     /// Returns a new hand struct where `card` is added to `self`.

@@ -17,7 +17,9 @@ pub fn heads_up_win_frequency(
         (*hand1 + *hand2 + *board + *dead_cards).len(),
         hand1.len() + hand2.len() + board.len() + dead_cards.len()
     );
-    let alive_cards = compute_alive_cards(hand1.mask | hand2.mask | board.mask | dead_cards.mask);
+    let alive_cards = compute_alive_cards(
+        hand1.get_mask() | hand2.get_mask() | board.get_mask() | dead_cards.get_mask(),
+    );
     assert!(alive_cards.len() >= 5 - board.len());
     let hand1 = *hand1 + *board;
     let hand2 = *hand2 + *board;
@@ -54,7 +56,7 @@ fn compute_alive_cards(mask: u64) -> Vec<usize> {
 fn heads_up_win_freq_0_0(hand: &Hand) -> (u32, u32, u32) {
     let mut cards = Vec::new();
     for i in 0..NUMBER_OF_CARDS {
-        if (CARDS[i].1 & hand.mask) != 0 {
+        if (CARDS[i].1 & hand.get_mask()) != 0 {
             cards.push(i);
         }
     }

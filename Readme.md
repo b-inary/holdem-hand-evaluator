@@ -64,7 +64,7 @@ fn main() {
 
 ## How It Works
 
-The main routine, [evaluate()](src/hand.rs#L100) function, consists of only about 10 lines of code, so please read it first. There are several magic constants used; how they are generated is explained in [scripts/Readme.md](scripts/Readme.md).
+The main routine, [evaluate()](src/hand.rs#L112) function, consists of only about 10 lines of code, so please read it first. There are several magic constants used; how they are generated is explained in [scripts/Readme.md](scripts/Readme.md).
 
 ## Generate Assets (optional)
 

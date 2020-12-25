@@ -6,8 +6,8 @@ const NUM_HAND_CATEGORIES: usize = HandCategory::StraightFlush as usize + 1;
 /// Enumerates possible hand categories from `hand`.
 pub fn enumerate_hand_category(hand: &Hand, dead_cards: &Hand) -> [u32; NUM_HAND_CATEGORIES] {
     assert!(2 <= hand.len() && hand.len() <= 7);
-    assert!((hand.mask & dead_cards.mask) == 0);
-    let alive_cards = compute_alive_cards(hand.mask | dead_cards.mask);
+    assert!((hand.get_mask() & dead_cards.get_mask()) == 0);
+    let alive_cards = compute_alive_cards(hand.get_mask() | dead_cards.get_mask());
     assert!(alive_cards.len() >= 7 - hand.len());
     match hand.len() {
         2 => enumerate_hand_category_2(hand, &alive_cards),
