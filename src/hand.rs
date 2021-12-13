@@ -130,7 +130,10 @@ impl Add for Hand {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         Self {
-            key: self.key.wrapping_add(rhs.key),
+            key: self
+                .key
+                .wrapping_add(rhs.key)
+                .wrapping_sub(0x3333 << SUIT_SHIFT),
             mask: self.mask.wrapping_add(rhs.mask),
         }
     }
@@ -139,6 +142,7 @@ impl Add for Hand {
 impl AddAssign for Hand {
     fn add_assign(&mut self, rhs: Self) {
         self.key = self.key.wrapping_add(rhs.key);
+        self.key = self.key.wrapping_sub(0x3333 << SUIT_SHIFT);
         self.mask = self.mask.wrapping_add(rhs.mask);
     }
 }
