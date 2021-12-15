@@ -2,7 +2,7 @@
 
 Super fast hand rank evaluator for Texas hold'em poker written in Rust
 
-* ~980M eval/s sequential @Ryzen 7 3700X single-threaded
+* ~1.2G eval/s sequential @Ryzen 9 5950X single-threaded
 * Use small lookup tables (about 212KB)
 * No external dependencies
 * Well-tested
@@ -13,7 +13,7 @@ Super fast hand rank evaluator for Texas hold'em poker written in Rust
 
 ```toml
 [dependencies]
-holdem-hand-evaluator = { git = "https://github.com/b-inary/holdem-hand-evaluator", branch = "main" }
+holdem-hand-evaluator = { git = "https://github.com/b-inary/holdem-hand-evaluator" }
 ```
 
 `example.rs`

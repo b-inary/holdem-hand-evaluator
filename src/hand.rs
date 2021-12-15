@@ -62,7 +62,7 @@ impl Hand {
         hand
     }
 
-    /// Checks whether the hand is empty
+    /// Checks whether the hand is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.mask == 0
@@ -393,5 +393,14 @@ mod tests {
         // high cards
         assert_eq!(evaluate_hand_str("AdKdQdJd9s3h2c"), (0 << 12) + 1276);
         assert_eq!(evaluate_hand_str("9h8s7d5d4d3c2d"), (0 << 12) + 48);
+    }
+
+    #[test]
+    fn test_hand_addition() {
+        let hand1 = "4h4c".parse::<Hand>().unwrap();
+        let hand2 = "5h4s".parse::<Hand>().unwrap();
+        let board = "3s3c2d2c2h".parse::<Hand>().unwrap();
+        assert_eq!((hand1 + board).evaluate(), (6 << 12) + 1);
+        assert_eq!((hand2 + board).evaluate(), (6 << 12) + 0);
     }
 }
