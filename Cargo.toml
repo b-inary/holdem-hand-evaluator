@@ -15,6 +15,9 @@ assets = { path = "assets", package = "holdem-hand-evaluator-assets" }
 [dev-dependencies]
 criterion = "0.3"
 
+[profile.release]
+lto = "thin"
+
 [[bench]]
 name = "benchmark"
 harness = false
